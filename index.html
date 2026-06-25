@@ -4,17 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>For Mas Farikh</title>
-<script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"></script>
-<script>
-  // Fallback: kalau CDN utama gagal load (jaringan lambat/diblokir), coba CDN cadangan
-  window.addEventListener("DOMContentLoaded", function(){
-    if(!window.customElements.get("iconify-icon")){
-      var fallback = document.createElement("script");
-      fallback.src = "https://cdn.jsdelivr.net/npm/iconify-icon@3.0.2/dist/iconify-icon.min.js";
-      document.head.appendChild(fallback);
-    }
-  });
-</script>
 <style>
   :root{
     --ink:        #efeff1;
@@ -34,7 +23,6 @@
   }
 
   *{ box-sizing:border-box; }
-  iconify-icon{ display:inline-block; }
   html,body{
     margin:0; padding:0; height:100%;
     background:var(--void);
@@ -160,20 +148,48 @@
   .face-back{
     background:linear-gradient(150deg, var(--card-2), #1a1a21);
   }
+  /* Tanda tanya di sisi belakang kartu */
+  .face-back::after{
+    content: "";
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--line);
+  }
   .face-front{
     transform:rotateY(180deg);
     overflow:hidden;
     background:linear-gradient(150deg, var(--card-2), #1a1a21);
+    padding: 0;
   }
-  .face-front iconify-icon{
-    font-size:26px; color:var(--ink);
-    transition:color .3s;
+  /* Foto di dalam kartu */
+  .face-front img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: calc(var(--radius-sm) - 1px);
+    display: block;
+    filter: grayscale(0.15) contrast(1.05);
+    transition: filter .3s;
   }
-  .card.matched .face-front iconify-icon{
-    color:var(--ink-dim);
+  .card.matched .face-front img{
+    filter: grayscale(1) brightness(0.65);
   }
-  .card.matched .face-back{
-    box-shadow:0 0 0 2px var(--ink) inset;
+  .card.matched .face{
+    box-shadow: 0 0 0 2px var(--ink) inset;
+  }
+  /* Overlay centang saat matched */
+  .card.matched .face-front::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
   }
   .card.wrong .card-inner{
     animation:shake .42s;
@@ -420,8 +436,7 @@
     </div>
   </section>
 
-  <!-- Audio latar: mulai di layar kue, lanjut sampai layar pesan.
-       GANTI NAMA FILE DI SINI sesuai file musik kamu, taruh di folder yang sama dengan HTML ini. -->
+  <!-- Audio latar -->
   <audio id="bgMusic" src="mn.mp3" preload="auto" loop></audio>
 
   <!-- ===================== SCREEN 3 : MESSAGE ===================== -->
@@ -432,8 +447,7 @@
 
       <div class="avatar-wrap">
         <div class="avatar">
-          <!-- GANTI NAMA FILE FOTO DI SINI: foto orang yang diberi ucapan -->
-          <img id="photoAvatar" src="" alt="Foto">
+          <img id="photoAvatar" src="nr.jpg" alt="Foto">
         </div>
       </div>
 
@@ -447,23 +461,18 @@
 
 <script>
 /* =======================================================
-   ICON GAME MATCHING
-   6 pasang icon (12 kartu total). Ganti nama icon di bawah
-   kalau mau pakai icon lain dari iconify.design (set "ph" / phosphor).
+   FOTO UNTUK MEMORY GAME
+   6 pasang kartu, masing-masing pasang punya foto berbeda.
+   Ganti nama file sesuai foto kamu (taruh di folder yang sama dengan HTML ini).
    ======================================================= */
-const ICONS = [
-  "ph:flower-fill",
-  "ph:gift-fill",
-  "ph:confetti-fill",
-  "ph:heart-fill",
-  "ph:star-fill",
-  "ph:cake"
+const PHOTOS = [
+  "a.jpg",
+  "b.jpg",
+  "c.jpg",
+  "d.jpg",
+  "e2.jpg",
+  "f.jpg"
 ];
-
-/* GANTI NAMA FILE DI SINI: foto untuk avatar di layar pesan (Screen 3) */
-const AVATAR_PHOTO = "nr.jpg";
-
-document.getElementById("photoAvatar").src = AVATAR_PHOTO;
 
 /* ---------- Audio latar ---------- */
 const bgMusic = document.getElementById("bgMusic");
@@ -472,11 +481,7 @@ function startMusic(){
   if(musicStarted) return;
   musicStarted = true;
   bgMusic.volume = 0;
-  bgMusic.play().catch(()=>{
-    /* Browser mungkin blokir autoplay sebelum ada interaksi user.
-       Karena ini dipanggil setelah user men-tap kartu (interaksi),
-       biasanya tetap diizinkan. */
-  });
+  bgMusic.play().catch(()=>{});
   let v = 0;
   const fadeIn = setInterval(()=>{
     v += 0.08;
@@ -503,9 +508,6 @@ function goToScreen(n){
 }
 
 /* ---------- Typewriter ucapan (Screen 3) ---------- */
-/* GANTI TEKS UCAPAN DI SINI. Pisahkan paragraf dengan "\n\n".
-   Untuk menyisipkan icon Iconify di tengah kalimat, pakai tag [[nama-icon]],
-   contoh: [[ph:heart-fill]] -> akan dirender jadi <iconify-icon icon="ph:heart-fill">. */
 const WISH_TEXT =
 `Met ulang tahun, Mas Farikh! Semoga di usia yang baru ini selalu diberi sehat, rezeki yang lancar biar cepet kaya, dan semua impiannya pelan-pelan terwujud.
 
@@ -521,18 +523,10 @@ function startTypewriter(){
   target.innerHTML = "";
   caret.classList.remove("hide");
 
-  // Tokenisasi: pecah jadi karakter biasa + token icon [[...]] + jeda paragraf
   const tokens = [];
   const paragraphs = WISH_TEXT.split("\n\n");
   paragraphs.forEach((para, pIdx) => {
-    const re = /\[\[(.*?)\]\]/g;
-    let lastIndex = 0, m;
-    while((m = re.exec(para)) !== null){
-      para.slice(lastIndex, m.index).split("").forEach(ch => tokens.push({type:"char", value:ch}));
-      tokens.push({type:"icon", value:m[1]});
-      lastIndex = re.lastIndex;
-    }
-    para.slice(lastIndex).split("").forEach(ch => tokens.push({type:"char", value:ch}));
+    para.split("").forEach(ch => tokens.push({type:"char", value:ch}));
     if(pIdx < paragraphs.length - 1) tokens.push({type:"parabreak"});
   });
 
@@ -541,17 +535,10 @@ function startTypewriter(){
 
   let i = 0;
   function step(){
-    if(i >= tokens.length){
-      caret.classList.add("hide");
-      return;
-    }
+    if(i >= tokens.length){ caret.classList.add("hide"); return; }
     const t = tokens[i];
     if(t.type === "char"){
       currentP.appendChild(document.createTextNode(t.value));
-    } else if(t.type === "icon"){
-      const icon = document.createElement("iconify-icon");
-      icon.setAttribute("icon", t.value);
-      currentP.appendChild(icon);
     } else if(t.type === "parabreak"){
       currentP = document.createElement("p");
       target.appendChild(currentP);
@@ -567,12 +554,14 @@ function startTypewriter(){
 const grid = document.getElementById("grid");
 const progressRow = document.getElementById("progressRow");
 
+// Buat deck: 2 kartu per foto
 let deck = [];
-ICONS.forEach((icon, i) => {
-  deck.push({ pairId: i, icon });
-  deck.push({ pairId: i, icon });
+PHOTOS.forEach((photo, i) => {
+  deck.push({ pairId: i, photo });
+  deck.push({ pairId: i, photo });
 });
-// shuffle
+
+// Shuffle
 for(let i = deck.length - 1; i > 0; i--){
   const j = Math.floor(Math.random() * (i + 1));
   [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -582,13 +571,15 @@ let flippedCards = [];
 let matchedPairs = 0;
 let lock = false;
 
-ICONS.forEach(()=>{
+// Progress dots
+PHOTOS.forEach(()=>{
   const dot = document.createElement("div");
   dot.className = "dot";
   progressRow.appendChild(dot);
 });
 const dots = progressRow.querySelectorAll(".dot");
 
+// Render kartu
 deck.forEach((item, idx) => {
   const card = document.createElement("div");
   card.className = "card";
@@ -599,21 +590,12 @@ deck.forEach((item, idx) => {
     <div class="card-inner">
       <div class="face face-back"></div>
       <div class="face face-front">
-        <iconify-icon icon="${item.icon}"></iconify-icon>
+        <img src="${item.photo}" alt="foto" draggable="false">
       </div>
     </div>
   `;
   card.addEventListener("click", () => onCardTap(card));
   grid.appendChild(card);
-
-  // Fallback otomatis: kalau icon depan kartu gagal render (nama tidak valid / gagal load),
-  // ganti ke icon cadangan yang sudah pasti tersedia, supaya kartu tidak kosong.
-  const frontIcon = card.querySelector(".face-front iconify-icon");
-  setTimeout(() => {
-    if(frontIcon && frontIcon.shadowRoot && frontIcon.shadowRoot.childElementCount === 0){
-      frontIcon.setAttribute("icon", "ph:star-fill");
-    }
-  }, 1300);
 });
 
 function onCardTap(card){
@@ -637,7 +619,7 @@ function onCardTap(card){
         lock = false;
         matchedPairs++;
         dots[matchedPairs - 1].classList.add("done");
-        if(matchedPairs === ICONS.length){
+        if(matchedPairs === PHOTOS.length){
           startMusic();
           setTimeout(()=> goToScreen(2), 750);
         }

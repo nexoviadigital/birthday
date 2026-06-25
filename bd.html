@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>For Mas Farikh</title>
+<script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"></script>
+<script>
+  // Fallback: kalau CDN utama gagal load (jaringan lambat/diblokir), coba CDN cadangan
+  window.addEventListener("DOMContentLoaded", function(){
+    if(!window.customElements.get("iconify-icon")){
+      var fallback = document.createElement("script");
+      fallback.src = "https://cdn.jsdelivr.net/npm/iconify-icon@3.0.2/dist/iconify-icon.min.js";
+      document.head.appendChild(fallback);
+    }
+  });
+</script>
+<style>
+  :root{
+    --ink:        #efeff1;
+    --ink-dim:    #b9b9c0;
+    --void:       #0c0c10;
+    --void-2:     #15151b;
+    --card:       #1c1c24;
+    --card-2:     #24242e;
+    --line:       rgba(239,239,241,0.16);
+    --line-soft:  rgba(239,239,241,0.08);
+    --accent:     #8d93a6;
+    --accent-2:   #5d6175;
+    --shadow:     0 30px 60px -20px rgba(0,0,0,0.65);
+    --radius-lg:  28px;
+    --radius-md:  18px;
+    --radius-sm:  12px;
+  }
+
+  *{ box-sizing:border-box; }
+  iconify-icon{ display:inline-block; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--void);
+    font-family:'Fraunces', Georgia, serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body{
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* ---------- Ambient background ---------- */
+  .bg{
+    position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, #1d1d24 0%, var(--void) 60%);
+    overflow:hidden;
+  }
+  .bg .ring{
+    position:absolute; border-radius:50%;
+    border:1px solid var(--line-soft);
+  }
+  .bg .ring:nth-child(1){ width:160px; height:160px; top:6%; left:4%; }
+  .bg .ring:nth-child(2){ width:90px;  height:90px;  top:14%; left:46%; }
+  .bg .ring:nth-child(3){ width:130px; height:130px; top:8%;  right:6%; }
+  .bg .ring:nth-child(4){ width:70px;  height:70px;  top:78%; right:10%; }
+  .bg .ring:nth-child(5){ width:200px; height:200px; bottom:-60px; left:30%; opacity:.6; }
+  .bg .spark{
+    position:absolute; width:3px; height:3px; border-radius:50%;
+    background:var(--ink-dim); opacity:.5;
+  }
+
+  /* ---------- App shell ---------- */
+  .stage{
+    position:relative; z-index:1;
+    width:100%; max-width:400px;
+    height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px 0;
+  }
+
+  .screen{
+    position:absolute;
+    width:100%; max-width:352px;
+    max-height:calc(100vh - 48px);
+    margin:0 24px;
+    opacity:0; pointer-events:none;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .screen::-webkit-scrollbar{ display:none; }
+  .screen.active{
+    opacity:1; pointer-events:auto;
+    transform:translateY(0) scale(1);
+  }
+  .screen.leaving{
+    opacity:0; transform:translateY(-10px) scale(.97);
+  }
+
+  /* ---------- Card chrome ---------- */
+  .panel{
+    position:relative;
+    background:linear-gradient(160deg, var(--card-2), var(--card) 70%);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:34px 26px 30px;
+    margin:4px;
+  }
+  .corner{
+    position:absolute; width:22px; height:22px;
+    border:2px solid var(--ink-dim); opacity:.55;
+  }
+  .corner.tl{ top:14px; left:14px; border-right:none; border-bottom:none; border-radius:4px 0 0 0; }
+  .corner.br{ bottom:14px; right:14px; border-left:none; border-top:none; border-radius:0 0 4px 0; }
+
+  .eyebrow{
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    font-family:'Inter', system-ui, sans-serif;
+    font-weight:600; font-size:21px; letter-spacing:.01em;
+    color:var(--ink); text-align:center; margin:0 0 6px;
+  }
+
+  .sub{
+    text-align:center; font-family:'Inter', system-ui, sans-serif;
+    font-size:14.5px; color:var(--ink-dim); margin:0 0 22px;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+
+  /* ====================================================
+     SCREEN 1 — MEMORY GAME
+     ==================================================== */
+  .grid{
+    display:grid; grid-template-columns:repeat(4, 1fr);
+    gap:9px;
+  }
+  .card{
+    position:relative; aspect-ratio:1/1;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    perspective:600px;
+  }
+  .card-inner{
+    position:absolute; inset:0;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.4,0,.2,1);
+  }
+  .card.flipped .card-inner{ transform:rotateY(180deg); }
+
+  .face{
+    position:absolute; inset:0;
+    border-radius:var(--radius-sm);
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden;
+    border:1px solid var(--line);
+  }
+  .face-back{
+    background:linear-gradient(150deg, var(--card-2), #1a1a21);
+  }
+  .face-front{
+    transform:rotateY(180deg);
+    overflow:hidden;
+    background:linear-gradient(150deg, var(--card-2), #1a1a21);
+  }
+  .face-front iconify-icon{
+    font-size:26px; color:var(--ink);
+    transition:color .3s;
+  }
+  .card.matched .face-front iconify-icon{
+    color:var(--ink-dim);
+  }
+  .card.matched .face-back{
+    box-shadow:0 0 0 2px var(--ink) inset;
+  }
+  .card.wrong .card-inner{
+    animation:shake .42s;
+  }
+  @keyframes shake{
+    20%{ transform:translateX(-4px) rotateY(180deg); }
+    40%{ transform:translateX(4px) rotateY(180deg); }
+    60%{ transform:translateX(-3px) rotateY(180deg); }
+    80%{ transform:translateX(3px) rotateY(180deg); }
+    100%{ transform:translateX(0) rotateY(180deg); }
+  }
+
+  .progress-row{
+    margin-top:20px; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .progress-row .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--line); transition:background .3s, transform .3s;
+  }
+  .progress-row .dot.done{ background:var(--ink); transform:scale(1.25); }
+
+  /* ====================================================
+     SCREEN 2 — MAKE A WISH
+     ==================================================== */
+  .cake-wrap{
+    display:flex; flex-direction:column; align-items:center;
+    margin:8px 0 22px;
+  }
+  .flame-stack{
+    position:relative; width:18px; height:46px; margin-bottom:-2px;
+  }
+  .flame{
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:14px; height:26px; border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+    background:radial-gradient(circle at 50% 75%, #f3f3f0 0%, #cfcfd2 35%, #75757c 70%, transparent 100%);
+    box-shadow:0 0 14px 3px rgba(239,239,241,0.35);
+    transform-origin:bottom center;
+    animation:flicker 1.6s ease-in-out infinite;
+    transition:opacity .5s, transform .5s;
+  }
+  @keyframes flicker{
+    0%,100%{ transform:translateX(-50%) rotate(-2deg) scaleY(1); }
+    35%{ transform:translateX(-50%) rotate(2deg) scaleY(1.07); }
+    65%{ transform:translateX(-48%) rotate(-3deg) scaleY(.95); }
+  }
+  .flame.out{
+    opacity:0; transform:translateX(-50%) scaleY(.2);
+    animation:none;
+    box-shadow:none;
+  }
+  .smoke{
+    position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+    width:5px; height:5px; border-radius:50%;
+    background:var(--ink-dim); opacity:0; filter:blur(2px);
+  }
+  .smoke.show{ animation:smokeRise 1.4s ease-out forwards; }
+  @keyframes smokeRise{
+    0%{ opacity:.55; transform:translate(-50%,0) scale(1); }
+    100%{ opacity:0; transform:translate(-30%,-46px) scale(3); }
+  }
+  .wick{
+    width:5px; height:20px; margin:0 auto;
+    background:linear-gradient(#d8d3b8,#aaa37e);
+    border-radius:2px;
+  }
+  .candle-body{
+    width:14px; height:34px; margin:0 auto;
+    background:repeating-linear-gradient(0deg, #e9e9ec 0 6px, #d2d2d8 6px 12px);
+    border-radius:3px;
+    box-shadow:inset -2px 0 4px rgba(0,0,0,.25);
+  }
+  .cake{
+    width:200px; margin-top:-2px;
+  }
+  .tier{
+    width:100%; border-radius:14px;
+    background:linear-gradient(180deg,#e7e7ea,#c7c7cf);
+    box-shadow:inset 0 -10px 14px -6px rgba(0,0,0,.18), inset 0 4px 6px rgba(255,255,255,.25);
+    position:relative;
+  }
+  .tier.top{ height:38px; box-shadow:inset 0 -10px 14px -6px rgba(0,0,0,.18), inset 0 6px 10px rgba(255,255,255,.4); }
+  .tier.mid{ height:46px; margin-top:-12px; }
+  .tier.base{ height:50px; margin-top:-12px; }
+  .sprinkle{
+    position:absolute; width:4px; height:4px; border-radius:50%;
+    background:var(--accent-2); opacity:.8;
+  }
+
+  .wish-text{
+    text-align:center; font-family:'Inter', system-ui, sans-serif;
+    font-size:15px; color:var(--ink-dim); line-height:1.55;
+    margin:0 0 26px;
+  }
+
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    width:100%; padding:15px 0;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:linear-gradient(160deg,#2a2a33,#1a1a21);
+    color:var(--ink);
+    font-family:'Inter', system-ui, sans-serif;
+    font-weight:600; font-size:15.5px;
+    cursor:pointer;
+    transition:transform .15s, background .25s, box-shadow .25s;
+  }
+  .btn:hover{ box-shadow:0 8px 22px -8px rgba(0,0,0,.6); }
+  .btn:active{ transform:scale(.97); }
+  .btn:disabled{ opacity:.5; cursor:default; }
+
+  /* ====================================================
+     SCREEN 3 — MESSAGE
+     ==================================================== */
+  .avatar-wrap{
+    display:flex; justify-content:center; margin:-4px 0 16px;
+  }
+  .avatar{
+    width:80px; height:80px; border-radius:50%;
+    overflow:hidden; border:1px solid var(--line);
+    box-shadow:0 0 0 6px var(--void-2), 0 14px 26px -10px rgba(0,0,0,.6);
+  }
+  .avatar img{
+    width:100%; height:100%; object-fit:cover;
+    filter:grayscale(1) contrast(1.05);
+  }
+
+  .msg-title{
+    text-align:center; font-family:'Inter', system-ui, sans-serif;
+    font-weight:700; font-size:19px; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin:0 0 14px;
+  }
+
+  .msg-body{
+    font-family:'Inter', system-ui, sans-serif;
+    font-size:13.5px; line-height:1.6; color:var(--ink-dim);
+    white-space:pre-line;
+  }
+  .msg-body p{ margin:0 0 13px; }
+  .msg-body p:last-child{ margin-bottom:0; }
+  .msg-body strong{ color:var(--ink); font-weight:600; }
+
+  .confetti-layer{
+    position:absolute; inset:0; overflow:hidden;
+    border-radius:var(--radius-lg);
+    pointer-events:none; z-index:5;
+  }
+  .confetti{
+    position:absolute; top:-12px;
+    opacity:0;
+    animation-name:confettiFall;
+    animation-timing-function:cubic-bezier(.25,.46,.45,.94);
+    animation-fill-mode:forwards;
+  }
+  .confetti.sq{ border-radius:2px; }
+  .confetti.circle{ border-radius:50%; }
+  .confetti.strip{ border-radius:1px; }
+  @keyframes confettiFall{
+    0%{   opacity:0;   transform:translate(0,0) rotate(0deg); }
+    8%{   opacity:.95; }
+    100%{ opacity:0;   transform:translate(var(--drift), 360px) rotate(var(--rotate)); }
+  }
+
+  .caret{
+    display:inline-block; width:2px; height:14px;
+    background:var(--ink-dim); margin-left:1px;
+    vertical-align:-2px;
+    animation:blink 1s step-end infinite;
+  }
+  .caret.hide{ display:none; }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  @media (max-width:360px){
+    .cake{ width:170px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+  <div class="ring"></div><div class="ring"></div>
+  <div class="spark" style="top:18%; left:18%;"></div>
+  <div class="spark" style="top:30%; left:80%;"></div>
+  <div class="spark" style="top:62%; left:12%;"></div>
+  <div class="spark" style="top:70%; left:70%;"></div>
+</div>
+
+<div class="stage">
+
+  <!-- ===================== SCREEN 1 : MEMORY GAME ===================== -->
+  <section class="screen active" id="screen-1">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner br"></span>
+
+      <h1 class="eyebrow">A Little Game for Mas Farikh</h1>
+      <p class="sub">Balik 2 kartu yang sama!</p>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="progress-row" id="progressRow"></div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 2 : MAKE A WISH ===================== -->
+  <section class="screen" id="screen-2">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner br"></span>
+
+      <h1 class="eyebrow">Make a Wish</h1>
+
+      <div class="cake-wrap">
+        <div class="flame-stack">
+          <div class="smoke" id="smoke"></div>
+          <div class="flame" id="flame"></div>
+        </div>
+        <div class="wick"></div>
+        <div class="candle-body"></div>
+
+        <div class="cake">
+          <div class="tier top"></div>
+          <div class="tier mid">
+            <div class="sprinkle" style="top:10px; left:20px;"></div>
+            <div class="sprinkle" style="top:24px; left:60px;"></div>
+            <div class="sprinkle" style="top:14px; left:110px;"></div>
+            <div class="sprinkle" style="top:30px; left:150px;"></div>
+            <div class="sprinkle" style="top:8px;  left:170px;"></div>
+          </div>
+          <div class="tier base">
+            <div class="sprinkle" style="top:12px; left:14px;"></div>
+            <div class="sprinkle" style="top:28px; left:50px;"></div>
+            <div class="sprinkle" style="top:16px; left:95px;"></div>
+            <div class="sprinkle" style="top:30px; left:140px;"></div>
+            <div class="sprinkle" style="top:14px; left:175px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="wish-text">Tutup matamu, buat permintaan,<br>lalu tiup lilinnya yaa!</p>
+
+      <button class="btn" id="blowBtn">
+        Tiup Lilin
+      </button>
+    </div>
+  </section>
+
+  <!-- Audio latar: mulai di layar kue, lanjut sampai layar pesan.
+       GANTI NAMA FILE DI SINI sesuai file musik kamu, taruh di folder yang sama dengan HTML ini. -->
+  <audio id="bgMusic" src="mn.mp3" preload="auto" loop></audio>
+
+  <!-- ===================== SCREEN 3 : MESSAGE ===================== -->
+  <section class="screen" id="screen-3">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner br"></span>
+      <div class="confetti-layer" id="confettiLayer"></div>
+
+      <div class="avatar-wrap">
+        <div class="avatar">
+          <!-- GANTI NAMA FILE FOTO DI SINI: foto orang yang diberi ucapan -->
+          <img id="photoAvatar" src="" alt="Foto">
+        </div>
+      </div>
+
+      <h2 class="msg-title">Happy Birthday, Mas Farikh!</h2>
+
+      <div class="msg-body" id="msgBody"><span id="typeTarget"></span><span class="caret" id="caret"></span></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =======================================================
+   ICON GAME MATCHING
+   6 pasang icon (12 kartu total). Ganti nama icon di bawah
+   kalau mau pakai icon lain dari iconify.design (set "ph" / phosphor).
+   ======================================================= */
+const ICONS = [
+  "ph:flower-fill",
+  "ph:gift-fill",
+  "ph:confetti-fill",
+  "ph:heart-fill",
+  "ph:star-fill",
+  "ph:cake"
+];
+
+/* GANTI NAMA FILE DI SINI: foto untuk avatar di layar pesan (Screen 3) */
+const AVATAR_PHOTO = "nr.jpg";
+
+document.getElementById("photoAvatar").src = AVATAR_PHOTO;
+
+/* ---------- Audio latar ---------- */
+const bgMusic = document.getElementById("bgMusic");
+let musicStarted = false;
+function startMusic(){
+  if(musicStarted) return;
+  musicStarted = true;
+  bgMusic.volume = 0;
+  bgMusic.play().catch(()=>{
+    /* Browser mungkin blokir autoplay sebelum ada interaksi user.
+       Karena ini dipanggil setelah user men-tap kartu (interaksi),
+       biasanya tetap diizinkan. */
+  });
+  let v = 0;
+  const fadeIn = setInterval(()=>{
+    v += 0.08;
+    bgMusic.volume = Math.min(v, 0.8);
+    if(v >= 0.8) clearInterval(fadeIn);
+  }, 120);
+}
+
+/* ---------- Navigasi antar layar ---------- */
+function goToScreen(n){
+  const current = document.querySelector(".screen.active");
+  const next = document.getElementById("screen-" + n);
+  if(!current || !next || current === next) return;
+  current.classList.add("leaving");
+  current.classList.remove("active");
+  setTimeout(()=>{ current.classList.remove("leaving"); }, 600);
+  setTimeout(()=>{
+    next.classList.add("active");
+    if(n === 3){
+      spawnConfetti();
+      startTypewriter();
+    }
+  }, 60);
+}
+
+/* ---------- Typewriter ucapan (Screen 3) ---------- */
+/* GANTI TEKS UCAPAN DI SINI. Pisahkan paragraf dengan "\n\n".
+   Untuk menyisipkan icon Iconify di tengah kalimat, pakai tag [[nama-icon]],
+   contoh: [[ph:heart-fill]] -> akan dirender jadi <iconify-icon icon="ph:heart-fill">. */
+const WISH_TEXT =
+`Met ulang tahun, Mas Farikh! Semoga di usia yang baru ini selalu diberi sehat, rezeki yang lancar biar cepet kaya, dan semua impiannya pelan-pelan terwujud.
+
+Biarpun kita jarang interaksi selain ngasih jempol di sosmed, aku mau ngingetin hal penting: 'laki-laki tidak bercerita itu bullshit'. Nah, berhubung Mas udah makin dewasa, kalau lagi mumet jangan dipendem sendiri ya.
+
+Sini bagi-bagi ceritanya ke aku, siapa tahu aku bisa bantu... bantu doa maksudnya hahaha, bercanda ✌🏻sebenernya terserah seh mau cerita ke siapa, bebas! Doa yang baek-baek deh pokoknya buat kamu.
+
+Enjoy your day, Mas! Bahagia selalu!`;
+
+function startTypewriter(){
+  const target = document.getElementById("typeTarget");
+  const caret = document.getElementById("caret");
+  target.innerHTML = "";
+  caret.classList.remove("hide");
+
+  // Tokenisasi: pecah jadi karakter biasa + token icon [[...]] + jeda paragraf
+  const tokens = [];
+  const paragraphs = WISH_TEXT.split("\n\n");
+  paragraphs.forEach((para, pIdx) => {
+    const re = /\[\[(.*?)\]\]/g;
+    let lastIndex = 0, m;
+    while((m = re.exec(para)) !== null){
+      para.slice(lastIndex, m.index).split("").forEach(ch => tokens.push({type:"char", value:ch}));
+      tokens.push({type:"icon", value:m[1]});
+      lastIndex = re.lastIndex;
+    }
+    para.slice(lastIndex).split("").forEach(ch => tokens.push({type:"char", value:ch}));
+    if(pIdx < paragraphs.length - 1) tokens.push({type:"parabreak"});
+  });
+
+  let currentP = document.createElement("p");
+  target.appendChild(currentP);
+
+  let i = 0;
+  function step(){
+    if(i >= tokens.length){
+      caret.classList.add("hide");
+      return;
+    }
+    const t = tokens[i];
+    if(t.type === "char"){
+      currentP.appendChild(document.createTextNode(t.value));
+    } else if(t.type === "icon"){
+      const icon = document.createElement("iconify-icon");
+      icon.setAttribute("icon", t.value);
+      currentP.appendChild(icon);
+    } else if(t.type === "parabreak"){
+      currentP = document.createElement("p");
+      target.appendChild(currentP);
+    }
+    i++;
+    const delay = (t.type === "char" && ",.!".includes(t.value)) ? 110 : 18;
+    setTimeout(step, delay);
+  }
+  step();
+}
+
+/* ---------- SCREEN 1 : Memory Game ---------- */
+const grid = document.getElementById("grid");
+const progressRow = document.getElementById("progressRow");
+
+let deck = [];
+ICONS.forEach((icon, i) => {
+  deck.push({ pairId: i, icon });
+  deck.push({ pairId: i, icon });
+});
+// shuffle
+for(let i = deck.length - 1; i > 0; i--){
+  const j = Math.floor(Math.random() * (i + 1));
+  [deck[i], deck[j]] = [deck[j], deck[i]];
+}
+
+let flippedCards = [];
+let matchedPairs = 0;
+let lock = false;
+
+ICONS.forEach(()=>{
+  const dot = document.createElement("div");
+  dot.className = "dot";
+  progressRow.appendChild(dot);
+});
+const dots = progressRow.querySelectorAll(".dot");
+
+deck.forEach((item, idx) => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.pairId = item.pairId;
+  card.dataset.index = idx;
+
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="face face-back"></div>
+      <div class="face face-front">
+        <iconify-icon icon="${item.icon}"></iconify-icon>
+      </div>
+    </div>
+  `;
+  card.addEventListener("click", () => onCardTap(card));
+  grid.appendChild(card);
+
+  // Fallback otomatis: kalau icon depan kartu gagal render (nama tidak valid / gagal load),
+  // ganti ke icon cadangan yang sudah pasti tersedia, supaya kartu tidak kosong.
+  const frontIcon = card.querySelector(".face-front iconify-icon");
+  setTimeout(() => {
+    if(frontIcon && frontIcon.shadowRoot && frontIcon.shadowRoot.childElementCount === 0){
+      frontIcon.setAttribute("icon", "ph:star-fill");
+    }
+  }, 1300);
+});
+
+function onCardTap(card){
+  if(lock) return;
+  if(card.classList.contains("flipped")) return;
+  if(flippedCards.length === 2) return;
+
+  card.classList.add("flipped");
+  flippedCards.push(card);
+
+  if(flippedCards.length === 2){
+    lock = true;
+    const [a, b] = flippedCards;
+    const isMatch = a.dataset.pairId === b.dataset.pairId;
+
+    if(isMatch){
+      setTimeout(()=>{
+        a.classList.add("matched");
+        b.classList.add("matched");
+        flippedCards = [];
+        lock = false;
+        matchedPairs++;
+        dots[matchedPairs - 1].classList.add("done");
+        if(matchedPairs === ICONS.length){
+          startMusic();
+          setTimeout(()=> goToScreen(2), 750);
+        }
+      }, 380);
+    } else {
+      setTimeout(()=>{
+        a.classList.add("wrong");
+        b.classList.add("wrong");
+      }, 280);
+      setTimeout(()=>{
+        a.classList.remove("flipped","wrong");
+        b.classList.remove("flipped","wrong");
+        flippedCards = [];
+        lock = false;
+      }, 900);
+    }
+  }
+}
+
+/* ---------- SCREEN 2 : Make a Wish ---------- */
+const blowBtn = document.getElementById("blowBtn");
+const flame = document.getElementById("flame");
+const smoke = document.getElementById("smoke");
+
+blowBtn.addEventListener("click", () => {
+  if(blowBtn.disabled) return;
+  blowBtn.disabled = true;
+  flame.classList.add("out");
+  smoke.classList.add("show");
+  setTimeout(()=> goToScreen(3), 1400);
+});
+
+/* ---------- Confetti monokrom (Screen 3) ---------- */
+function spawnConfetti(){
+  const layer = document.getElementById("confettiLayer");
+  const shapes = ["sq","circle","strip"];
+  const count = 46;
+  for(let i = 0; i < count; i++){
+    const piece = document.createElement("span");
+    const shape = shapes[Math.floor(Math.random()*shapes.length)];
+    piece.className = "confetti " + shape;
+    const left = Math.random() * 100;
+    const delay = Math.random() * 0.4;
+    const duration = 2.6 + Math.random() * 1.6;
+    const drift = (Math.random() * 80 - 40) + "px";
+    const rotate = (Math.random() * 540 - 270) + "deg";
+    const size = 5 + Math.random() * 5;
+    const shade = ["#efeff1","#cfcfd4","#9a9aa2","#6f6f78"][Math.floor(Math.random()*4)];
+
+    piece.style.left = left + "%";
+    piece.style.animationDelay = delay + "s";
+    piece.style.animationDuration = duration + "s";
+    piece.style.setProperty("--drift", drift);
+    piece.style.setProperty("--rotate", rotate);
+    piece.style.background = shade;
+    if(shape === "circle"){
+      piece.style.width = size + "px";
+      piece.style.height = size + "px";
+    } else if(shape === "strip"){
+      piece.style.width = (size * 0.5) + "px";
+      piece.style.height = (size * 2.4) + "px";
+    } else {
+      piece.style.width = size + "px";
+      piece.style.height = size + "px";
+    }
+
+    layer.appendChild(piece);
+    setTimeout(()=> piece.remove(), (delay + duration) * 1000 + 200);
+  }
+}
+</script>
+</body>
+</html>
